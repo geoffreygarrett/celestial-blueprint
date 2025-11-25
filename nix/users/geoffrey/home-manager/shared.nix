@@ -22,6 +22,7 @@ in
     ./modules/zsh.nix
     ./modules/tmux.nix
     ./modules/htop.nix
+    ./modules/nixvim
   ];
 
   # colorScheme = {
@@ -78,6 +79,58 @@ in
       if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}"
     );
     stateVersion = lib.mkDefault "24.11";
+    packages = with pkgs; [
+      # File Management and System Utilities
+      ranger
+      ncdu
+      glances
+      termshark
+      pv
+      # kmon
+
+      # Text Processing and Document Conversion
+      pandoc
+      fq
+
+      # Version Control
+      lazygit
+      delta
+
+      # Productivity and Time Management
+      # taskwarrior
+      calcurse
+      ledger
+      watson
+      visidata
+      # when
+
+      # Network and System Monitoring
+      gping
+      nms
+
+      # Multimedia
+      ffmpeg
+      jp2a
+
+      # Web Browsing
+      w3m
+
+      # Fun and Visuals
+      cmatrix
+      asciiquarium
+      cbonsai
+      pipes-rs
+      nyancat
+      genact
+      mapscii
+
+      # Development and Debugging
+      cheat
+      pet
+
+      # Miscellaneous
+      tmatrix
+    ];
   };
 
   # Let Home Manager install and manage itself.

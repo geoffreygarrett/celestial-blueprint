@@ -97,6 +97,16 @@
        setopt EXTENDED_HISTORY INC_APPEND_HISTORY HIST_FIND_NO_DUPS HIST_IGNORE_ALL_DUPS HIST_REDUCE_BLANKS
        setopt AUTO_PUSHD PUSHD_IGNORE_DUPS PUSHD_SILENT
        unsetopt beep
+       unsetopt INTERACTIVE_COMMENTS  # Allow # in commands without escaping
+       
+       # Export LIBRARY_PATH for Rust linking on macOS (libiconv)
+       # This ensures cargo install works correctly
+       if [[ -n "$LIBRARY_PATH" ]]; then
+         export LIBRARY_PATH="$LIBRARY_PATH"
+       fi
+       if [[ -n "$CPATH" ]]; then
+         export CPATH="$CPATH"
+       fi
        setopt PROMPT_SUBST
 
        # Key bindings

@@ -4,13 +4,15 @@ let
 in
 with pkgs;
 [
-  (nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
+  # TODO: Fix nerd-fonts configuration - package structure changed
+  # pkgs.nerd-fonts."JetBrainsMono"
 
   fastfetch
-  nixus
+  # Temporarily disable nixus to avoid apple_sdk_11_0 evaluation issue
+  # nixus
 
   # RUST-SCRIPT
-  #  libiconv
+  libiconv
   rustup
   rust-script
   pcsclite
@@ -20,14 +22,14 @@ with pkgs;
   wireguard-tools
   ripgrep # DEPENDANT: Telescope live_grep
 
-  # DEVELOPMENT
-  lazygit
-  micromamba
-  zig # also needed for cc compiler for lazy in neovim
+          # DEVELOPMENT
+          lazygit
+          # micromamba  # Temporarily disabled - build failure
+          zig # also needed for cc compiler for lazy in neovim
   git
   difftastic
   jq
-  mdt
+  md-tui  # mdt was renamed
   #  gptcommit
 
   # Security

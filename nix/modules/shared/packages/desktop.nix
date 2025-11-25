@@ -11,7 +11,7 @@ shared-packages
   # Disk testing
   testdisk
   ddrescue
-  fio
+  # fio  # Temporarily disabled - doesn't support macOS (requires fuse)
 
   # Work
   spotify

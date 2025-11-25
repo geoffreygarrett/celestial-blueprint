@@ -15,7 +15,7 @@
     ../../modules/darwin
   ];
 
-  services.nix-daemon.enable = true;
+  # services.nix-daemon.enable = true; # Removed - nix-darwin manages this automatically
 
   # Environment packages
   environment.systemPackages =

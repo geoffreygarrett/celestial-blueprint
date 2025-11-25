@@ -6,27 +6,29 @@
   ...
 }:
 let
-  gh-wrapped =
-    if
-      pkgs.lib.hasAttrByPath [
-        "sops"
-        "secrets"
-        "github-token"
-        "path"
-      ] config
-    then
-      pkgs.writeShellScriptBin "gh" ''
-        GITHUB_TOKEN=$(cat ${config.sops.secrets.github-token.path})
-        export GITHUB_TOKEN
-        ${pkgs.gh}/bin/gh "$@"
-      ''
-    else
-      pkgs.gh;
+  # Temporarily disabled due to writeShellScriptBin using deprecated substituteAll
+  # gh-wrapped =
+  #   if
+  #     pkgs.lib.hasAttrByPath [
+  #       "sops"
+  #       "secrets"
+  #       "github-token"
+  #       "path"
+  #     ] config
+  #   then
+  #     pkgs.writeShellScriptBin "gh" ''
+  #       GITHUB_TOKEN=$(cat ${config.sops.secrets.github-token.path})
+  #       export GITHUB_TOKEN
+  #       ${pkgs.gh}/bin/gh "$@"
+  #     ''
+  #   else
+  #     pkgs.gh;
 in
 {
   programs.gh = {
     enable = true;
-    package = gh-wrapped;
+    # Temporarily use unwrapped gh
+    package = pkgs.gh;
     settings = {
       options = {
         git_protocol = "ssh";

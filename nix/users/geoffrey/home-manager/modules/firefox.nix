@@ -66,7 +66,8 @@ in
 {
   programs.firefox = {
     enable = true;
-    package = if (!pkgs.stdenv.isDarwin) then pkgs.firefox else pkgs.firefox-bin;
+    # Use firefox (not firefox-bin) on Darwin to support home-manager's override mechanism
+    package = pkgs.firefox;
     # enable = lib.mkIf (!pkgs.stdenv.isDarwin) true;
     profiles.geoffrey = {
       search = import ./firefox/search.nix {

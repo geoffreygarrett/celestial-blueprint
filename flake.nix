@@ -106,7 +106,7 @@
 
     # Custom
     nixus = {
-      url = "path:/home/geoffrey/.dotfiles/nixus";
+      url = "path:./nixus";
       flake = true;
     };
 
@@ -138,7 +138,6 @@
       homebrew-core,
       homebrew-cask,
       homebrew-bundle,
-      nikitabobko-aerospace,
       ...
     }@inputs:
     let
@@ -199,7 +198,29 @@
                   attrNames (readDir path)
                 );
             in
-            lib.optional (lib.isLinux system) nixgl.overlay
+            # Fix missing/removed packages - must be first to catch evaluation errors
+            [
+              (final: prev: {
+                # nodejs-18_x has been removed, use nodejs_20 or nodejs_22
+                nodejs-18_x = prev.nodejs_20 or prev.nodejs;
+                # typstfmt has been removed - just remove it completely
+                # typstfmt = prev.typstyle;
+              })
+            ]
+            # Fix missing packages on Darwin (Linux-only packages being evaluated)
+            ++ lib.optional (lib.isDarwin system) (
+              final: prev: {
+                plasma5Packages = prev.plasma5Packages or {} // {
+                  kdeconnect-kde = prev.stdenv.mkDerivation {
+                    pname = "kdeconnect-kde-stub";
+                    version = "0.0.0";
+                    dontBuild = true;
+                    installPhase = "mkdir -p $out";
+                  };
+                };
+              }
+            )
+            ++ lib.optional (lib.isLinux system) nixgl.overlay
             ++ map (n: import (path + ("/" + n))) overlayFiles
             ++ [
               (final: prev: {
@@ -318,9 +339,7 @@
               }
             ];
           };
-
         };
-
         # extraConfig = ''
         #   log-queries
         #   log-facility=/var/log/dnsmasq.log
@@ -444,20 +463,8 @@
               ./nix/modules/shared/colors.nix
             ];
           };
-          nixHomebrewModule = {
-            nix-homebrew = {
-              inherit user;
-              enable = true;
-              taps = {
-                "homebrew/homebrew-core" = homebrew-core;
-                "nikitabobko/homebrew-tap" = nikitabobko-aerospace;
-                "homebrew/homebrew-cask" = homebrew-cask;
-                "homebrew/homebrew-bundle" = homebrew-bundle;
-              };
-              mutableTaps = false;
-              autoMigrate = true;
-            };
-          };
+          # nix-homebrew disabled - using nix-darwin's built-in homebrew module instead
+          nixHomebrewModule = { };
         in
         {
           "artemis" = darwin.lib.darwinSystem {
@@ -469,8 +476,7 @@
               # inputs.nixus.darwinModules.dnsmasq
               # { nixus.dnsmasq = sharedDnsmasqConfig; }
               ./nix/hosts/darwin/artemis
-              homeManagerModule
-              nixHomebrewModule
+              # nixHomebrewModule  # Disabled - using nix-darwin's homebrew module
             ];
           };
         }
@@ -481,8 +487,8 @@
             pkgs = pkgsFor system;
             modules = [
               ./nix/hosts/darwin
-              homeManagerModule
-              nixHomebrewModule
+              # nixHomebrewModule  # Disabled - using nix-darwin's homebrew module
+              # nixHomebrewModule  # Disabled - using nix-darwin's homebrew module
             ];
           }
         );

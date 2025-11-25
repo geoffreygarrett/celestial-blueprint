@@ -29,12 +29,13 @@
         section = "others";
         options = "--view fan --display stack";
       }
-      {
-        path = "${pkgs.writeShellScriptBin "update-system" ''
-          ${pkgs.alacritty}/bin/alacritty -e bash -c 'cd ~/.dotfiles && nix flake update && nix run ".#switch"'
-        ''}/bin/update-system";
-        section = "others";
-      }
+      # Temporarily disabled due to writeShellScriptBin using deprecated substituteAll
+      # {
+      #   path = "${pkgs.writeShellScriptBin "update-system" ''
+      #     ${pkgs.alacritty}/bin/alacritty -e bash -c 'cd ~/.dotfiles && nix flake update && nix run ".#switch"'
+      #   ''}/bin/update-system";
+      #   section = "others";
+      # }
     ];
 
     #      { path = "${pkgs.docker}/Applications/Docker.app/"; }
@@ -57,6 +58,7 @@
 
   home-manager = {
     useGlobalPkgs = true;
+    # backupFileExtension is set in nix/users/geoffrey/shared/unix.nix
     sharedModules = [
       inputs.nixvim.homeManagerModules.nixvim
       inputs.sops-nix.homeManagerModules.sops
@@ -75,6 +77,8 @@
           ../shared/aliases.nix
           ../shared/secrets.nix
           # ../shared/programs
+          # Import user's home-manager configuration
+          ../../users/geoffrey/home-manager/shared.nix
         ];
 
         home = {
@@ -82,16 +86,19 @@
           packages = pkgs.callPackage ./packages { };
           stateVersion = "23.11";
 
-          # https://github.com/NixOS/nixpkgs/issues/206242
-          # https://github.com/nix-community/home-manager/issues/3482
-          #          sessionVariables = {
-          #            LIBRARY_PATH =
-          #              lib.makeLibraryPath [
-          #                pkgs.libiconv
-          #                pkgs.iconv
-          #              ]
-          #              + ''${config.environment.sessionVariables.LIBRARY_PATH or ""}:$LIBRARY_PATH'';
-          #          };
+          # Set up LIBRARY_PATH and CPATH for Rust linking on macOS
+          # This ensures libiconv can be found when using cargo install
+          sessionVariables = {
+            LIBRARY_PATH = lib.makeLibraryPath [
+              pkgs.libiconv
+              pkgs.darwin.apple_sdk.frameworks.CoreFoundation
+              pkgs.darwin.apple_sdk.frameworks.Security
+              pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
+            ];
+            CPATH = lib.makeSearchPath "include" [
+              pkgs.libiconv
+            ];
+          };
 
           #          sessionVariables = {
           #            EDITOR = "nvim";
@@ -120,19 +127,22 @@
   };
 
   # User configuration
+  # Note: shell is defined in nix/users/geoffrey/shared/unix.nix
   users.users.${user} = {
     name = "${user}";
     home = "/Users/${user}";
     isHidden = false;
-    shell = pkgs.zsh;
+    # shell = pkgs.zsh; # Defined in shared/unix.nix
     openssh.authorizedKeys.keys = keys;
   };
 
   # Homebrew configuration
+  # Temporarily disabled until Homebrew is reinstalled
+  # To re-enable: Install Homebrew first, then set enable = true
   homebrew = {
-    enable = true;
+    enable = false;
     casks = pkgs.callPackage ./casks.nix { } ++ [
-      "nikitabobko/tap/aerospace"
+      # "nikitabobko/tap/aerospace"
     ];
     brews = [
       "nushell"

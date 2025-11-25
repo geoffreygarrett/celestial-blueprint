@@ -29,9 +29,11 @@ rustPkgs.buildRustPackage {
       jq
       gnugrep
     ]
-    ++ pkgs.lib.optionals (lib.isDarwin system) [
-      pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
-    ]
+    # Temporarily removed Darwin frameworks due to apple_sdk_11_0 deprecation
+    # ++ pkgs.lib.optionals (lib.isDarwin system) [
+    #   pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
+    #   pkgs.darwin.apple_sdk.frameworks.CoreFoundation
+    # ]
     ++ pkgs.lib.optionals (lib.isAndroid system) [
       nix-on-droid.packages.${system}.nix-on-droid
     ];
@@ -54,9 +56,10 @@ rustPkgs.buildRustPackage {
           ++ pkgs.lib.optionals (lib.isAndroid system) [
             nix-on-droid.packages.${system}.nix-on-droid
           ]
-          ++ pkgs.lib.optionals (lib.isDarwin system) [
-            pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
-          ]
+          # Temporarily removed Darwin frameworks due to apple_sdk_11_0 deprecation
+          # ++ pkgs.lib.optionals (lib.isDarwin system) [
+          #   pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
+          # ]
         )
       }
   '';

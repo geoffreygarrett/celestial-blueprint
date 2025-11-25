@@ -11,7 +11,7 @@
     ../../../users/geoffrey/darwin/desktop.nix
   ];
 
-  services.nix-daemon.enable = true;
+  # services.nix-daemon.enable = true; # Removed - nix-darwin manages this automatically
   environment.systemPackages =
     with pkgs;
     [ ] ++ (import ../../../modules/shared/packages { inherit pkgs; });

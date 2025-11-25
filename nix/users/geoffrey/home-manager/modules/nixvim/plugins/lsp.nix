@@ -123,7 +123,7 @@
         tailwindcss.enable = true; # Best for Tailwind CSS
         nginx_language_server.enable = true; # Best for Nginx config files
         htmx.enable = true; # Best for HTMX
-        bufls.enable = true; # Best for Protocol Buffers
+        # bufls.enable = true; # Best for Protocol Buffers - package not available
         gdscript.enable = true; # Best for Godot/GDScript
         helm_ls.enable = true; # Best for Helm charts
         ltex.enable = true; # Best for LaTeX/text spell and grammar checking

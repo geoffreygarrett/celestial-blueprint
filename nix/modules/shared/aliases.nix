@@ -550,7 +550,7 @@
     };
 
     csv = {
-      command = "${pkgs.xsv}/bin/xsv";
+      command = "${pkgs.qsv}/bin/qsv";
       description = "A fast CSV command-line toolkit";
       tags = [
         "csv"

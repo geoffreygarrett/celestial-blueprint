@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Wrapper script to run nixus darwin switch
+set -e
+cd "$(dirname "$0")"
+sudo nix run '.#apps.aarch64-darwin.nixus' -- darwin switch --flake .
+
