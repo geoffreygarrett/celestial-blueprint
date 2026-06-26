@@ -112,7 +112,7 @@
         marksman.enable = true; # Good for Markdown
         texlab.enable = true; # Best for LaTeX
         svelte.enable = true; # Best for Svelte
-        graphql.enable = true; # Best for GraphQL
+        # graphql.enable = true; # Best for GraphQL - package not available
         sqls.enable = true; # Good for SQL (including PostgreSQL)
         docker-compose-language-service.enable = true; # Best for Docker Compose files
         dockerls.enable = true; # For Dockerfile
@@ -124,7 +124,7 @@
         nginx_language_server.enable = true; # Best for Nginx config files
         htmx.enable = true; # Best for HTMX
         # bufls.enable = true; # Best for Protocol Buffers - package not available
-        gdscript.enable = true; # Best for Godot/GDScript
+        # gdscript.enable = true; # Best for Godot/GDScript - package not available
         helm_ls.enable = true; # Best for Helm charts
         ltex.enable = true; # Best for LaTeX/text spell and grammar checking
         ast_grep.enable = true; # Useful for AST-based code searching and rewriting

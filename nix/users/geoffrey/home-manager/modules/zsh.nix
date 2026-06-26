@@ -19,35 +19,6 @@
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
 
-    initExtraFirst = ''
-      # Load Nix daemon if available
-      if [[ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
-        . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-        . /nix/var/nix/profiles/default/etc/profile.d/nix.sh
-      fi
-
-      # Platform-specific aliases
-      if [[ "$(uname)" == "Linux" ]]; then
-        alias pbcopy='xclip -selection clipboard'
-      fi
-
-      # PATH modifications
-      export PATH=$HOME/.pnpm-packages/bin:$HOME/.npm-packages/bin:$HOME/.composer/vendor/bin:$HOME/.local/share/bin:$HOME/bin:$PATH
-
-      # PNPM configuration
-      export PNPM_HOME=~/.pnpm-packages
-      alias pn=pnpm
-      alias px=pnpx
-
-      # Custom aliases
-      alias search='rg -p --glob "!node_modules/*" --glob "!vendor/*"'
-      alias watch="tmux new-session -d -s watch-session 'bash ./bin/watch.sh'"
-      alias unwatch='tmux kill-session -t watch-session'
-      alias diff=difft
-      alias ls='ls --color=auto'
-      alias windows='systemctl reboot --boot-loader-entry=auto-windows'
-    '';
-
     history = {
       path = "$HOME/.zsh_history";
       save = 100000;
@@ -91,9 +62,37 @@
       FZF_DEFAULT_OPTS = "--height 40% --layout=reverse --border";
     };
 
-    initExtra = ''
+    initContent = ''
+      # Load Nix daemon if available
+      if [[ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
+        . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+        . /nix/var/nix/profiles/default/etc/profile.d/nix.sh
+      fi
+
+      # Platform-specific aliases
+      if [[ "$(uname)" == "Linux" ]]; then
+        alias pbcopy='xclip -selection clipboard'
+      fi
+
+      # PATH modifications
+      export PATH=$HOME/.pnpm-packages/bin:$HOME/.npm-packages/bin:$HOME/.composer/vendor/bin:$HOME/.local/share/bin:$HOME/bin:$PATH
+
+      # PNPM configuration
+      export PNPM_HOME=~/.pnpm-packages
+      alias pn=pnpm
+      alias px=pnpx
+
+      # Custom aliases
+      alias search='rg -p --glob "!node_modules/*" --glob "!vendor/*"'
+      alias watch="tmux new-session -d -s watch-session 'bash ./bin/watch.sh'"
+      alias unwatch='tmux kill-session -t watch-session'
+      alias diff=difft
+      alias ls='ls --color=auto'
+      alias windows='systemctl reboot --boot-loader-entry=auto-windows'
+
        # Zsh options
-       setopt extendedglob nomatch
+       setopt extendedglob
+       setopt NO_NOMATCH  # Don't error on unmatched globs (allows # in flake refs without quoting)
        setopt EXTENDED_HISTORY INC_APPEND_HISTORY HIST_FIND_NO_DUPS HIST_IGNORE_ALL_DUPS HIST_REDUCE_BLANKS
        setopt AUTO_PUSHD PUSHD_IGNORE_DUPS PUSHD_SILENT
        unsetopt beep

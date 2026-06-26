@@ -4,15 +4,16 @@
     plugins.diffview = {
       enable = true;
       package = pkgs.vimPlugins.diffview-nvim;
-      diffBinaries = false;
-      disableDefaultKeymaps = false;
-      enhancedDiffHl = false;
-      extraOptions = { };
-      gitCmd = [ "git" ];
-      hgCmd = [ "hg" ];
-      showHelpHints = true;
-      useIcons = true;
-      watchIndex = true;
+      settings = {
+        diff_binaries = false;
+        disable_default_keymaps = false;
+        enhanced_diff_hl = false;
+        git_cmd = [ "git" ];
+        hg_cmd = [ "hg" ];
+        show_help_hints = true;
+        use_icons = true;
+        watch_index = true;
+      };
     };
 
     # You can add extra configuration if needed

@@ -19,7 +19,7 @@
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
 
-    initExtraFirst = ''
+    initContent = ''
       # Load Nix daemon if available
       if [[ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
         . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
@@ -91,13 +91,15 @@
       FZF_DEFAULT_OPTS = "--height 40% --layout=reverse --border";
     };
 
-    initExtra = ''
+    initContent = ''
        # Zsh options
-       setopt extendedglob nomatch
+       setopt extendedglob
+       setopt NO_NOMATCH  # Don't error on unmatched globs (allows # in flake refs without quoting)
        setopt EXTENDED_HISTORY INC_APPEND_HISTORY HIST_FIND_NO_DUPS HIST_IGNORE_ALL_DUPS HIST_REDUCE_BLANKS
        setopt AUTO_PUSHD PUSHD_IGNORE_DUPS PUSHD_SILENT
        unsetopt beep
        setopt PROMPT_SUBST
+       unsetopt INTERACTIVE_COMMENTS  # Allow # in commands without escaping
 
        # Key bindings
        bindkey -v
@@ -132,6 +134,15 @@
 
        # Direnv hook
        eval "$(${pkgs.direnv}/bin/direnv hook zsh)"
+
+       # Helper function to handle flake references with # (extendedglob treats # as a glob pattern)
+       # Usage: nix run '.#apps.aarch64-darwin.nixus' -- darwin switch --flake .
+       # Or use: nixrun .#apps.aarch64-darwin.nixus -- darwin switch --flake .
+       function nixrun() {
+         local flake_ref="$1"
+         shift
+         nix run "$flake_ref" -- "$@"
+       }
 
        # Utility functions
        function hashish() {

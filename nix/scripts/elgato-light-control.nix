@@ -4,7 +4,7 @@
 
 let
   ipCommand =
-    if pkgs.stdenv.isDarwin then "${pkgs.darwin.iproute2mac}/bin/ip" else "${pkgs.iproute2}/bin/ip";
+    if pkgs.stdenv.isDarwin then "${pkgs.iproute2mac}/bin/ip" else "${pkgs.iproute2}/bin/ip";
 in
 pkgs.writeShellScriptBin "elgato-light-control" ''
   # Configuration

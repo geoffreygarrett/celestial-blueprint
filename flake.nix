@@ -105,10 +105,11 @@
     nix-colors.url = "github:misterio77/nix-colors";
 
     # Custom
-    nixus = {
-      url = "path:./nixus";
-      flake = true;
-    };
+    # nixus is a path input (can't be locked) - imported directly via builtins.getFlake
+    # nixus = {
+    #   url = "path:./nixus";
+    #   flake = true;
+    # };
 
     deploy-rs = {
       url = "github:serokell/deploy-rs";
@@ -141,6 +142,12 @@
       ...
     }@inputs:
     let
+      # Import nixus directly (path inputs can't be locked)
+      # Use builtins.getFlake if available, otherwise fall back to import
+      nixusInput = if builtins.pathExists ./nixus then
+        (builtins.getFlake (toString ./nixus))
+      else
+        null;
       systems.linux = [
         "aarch64-linux"
         "x86_64-linux"
@@ -160,6 +167,8 @@
         "lmstudio"
         "nvidia"
         "mendeley"
+"copilot.vim" "vimplugin-copilot.vim" "vimplugin-copilot.vim-2025-11-20"
+
       ];
       systems.supported = systems.linux ++ systems.darwin ++ systems.android;
 
@@ -178,6 +187,7 @@
         };
       user = "geoffrey";
       keys = lib.readSSHKeys ./.nixus.toml;
+      
       pkgsFor =
         system:
         import nixpkgs {
@@ -187,7 +197,8 @@
             allowBroken = true;
             allowInsecure = false;
             allowUnsupportedSystem = true;
-            allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) allowed-unfree-packages;
+            # Note: allowUnfreePredicate is not set - allowUnfree = true allows all unfree packages
+            # This is needed for copilot.vim which is unfree
           };
           overlays =
             let
@@ -203,8 +214,13 @@
               (final: prev: {
                 # nodejs-18_x has been removed, use nodejs_20 or nodejs_22
                 nodejs-18_x = prev.nodejs_20 or prev.nodejs;
-                # typstfmt has been removed - just remove it completely
-                # typstfmt = prev.typstyle;
+                # typstfmt has been removed - replace with typstyle
+                # This must be done before nix-darwin's fonts module evaluates pkgs.typstfmt
+                typstfmt = prev.typstyle;
+                # Stub darwin.apple_sdk_11_0 to use current SDK (workaround for packages that still reference it)
+                darwin = prev.darwin or {} // {
+                  apple_sdk_11_0 = prev.darwin.apple_sdk or (throw "darwin.apple_sdk not available");
+                };
               })
             ]
             # Fix missing packages on Darwin (Linux-only packages being evaluated)
@@ -223,8 +239,9 @@
             ++ lib.optional (lib.isLinux system) nixgl.overlay
             ++ map (n: import (path + ("/" + n))) overlayFiles
             ++ [
+              # Only include nixus overlay if nixus input is available (path inputs can't be locked)
               (final: prev: {
-                nixus = self.packages.${system}.nixus;
+                nixus = if builtins.pathExists ./nixus then self.packages.${system}.nixus else prev.nixus or null;
               })
               inputs.nixpkgs-firefox-darwin.overlay
             ]
@@ -477,6 +494,14 @@
               # { nixus.dnsmasq = sharedDnsmasqConfig; }
               ./nix/hosts/darwin/artemis
               # nixHomebrewModule  # Disabled - using nix-darwin's homebrew module
+# Disable home-manager fonts module to avoid apple_sdk_11_0 error
+{
+  home-manager.users.${user}.home.file."Library/Fonts/.home-manager-fonts-version" = lib.mkForce {
+    text = "";
+    onChange = "";
+  };
+}
+
             ];
           };
         }
@@ -488,7 +513,7 @@
             modules = [
               ./nix/hosts/darwin
               # nixHomebrewModule  # Disabled - using nix-darwin's homebrew module
-              # nixHomebrewModule  # Disabled - using nix-darwin's homebrew module
+              # Fonts module is disabled in nix/modules/darwin/home-manager.nix to avoid apple_sdk_11_0 error
             ];
           }
         );
@@ -630,7 +655,8 @@
           homeManagerModule = {
             home-manager = {
               sharedModules = [
-                inputs.nixvim.homeManagerModules.nixvim
+inputs.nixvim.homeModules.nixvim
+
                 ./nix/packages/shared/shell-aliases
                 ./nix/modules/shared/colors.nix
               ];
@@ -655,8 +681,10 @@
             modules = [
               ./nix/hosts/nixos/apollo
               homeManagerModule
-              inputs.nixus.nixosModules.dnsmasq
-              { nixus.dnsmasq = sharedDnsmasqConfig; }
+              (lib.optionals (nixusInput != null) [
+                nixusInput.nixosModules.dnsmasq
+                { nixus.dnsmasq = sharedDnsmasqConfig; }
+              ])
             ];
           };
 
@@ -668,8 +696,10 @@
               ./nix/hosts/nixos/curiosity/default.nix
               ./nix/users/geoffrey/nixos/desktop.nix
               homeManagerModule
-              inputs.nixus.nixosModules.dnsmasq
-              { nixus.dnsmasq = sharedDnsmasqConfig; }
+              (lib.optionals (nixusInput != null) [
+                nixusInput.nixosModules.dnsmasq
+                { nixus.dnsmasq = sharedDnsmasqConfig; }
+              ])
             ];
           };
 
@@ -681,8 +711,10 @@
               ./nix/hosts/nixos/cassini
               ./nix/users/geoffrey/nixos/desktop.nix
               homeManagerModule
-              inputs.nixus.nixosModules.dnsmasq
-              { nixus.dnsmasq = sharedDnsmasqConfig; }
+              (lib.optionals (nixusInput != null) [
+                nixusInput.nixosModules.dnsmasq
+                { nixus.dnsmasq = sharedDnsmasqConfig; }
+              ])
             ];
           };
 
@@ -692,8 +724,10 @@
             pkgs = pkgsFor "aarch64-linux";
             modules = [
               ./nix/hosts/nixos/mariner/1
-              inputs.nixus.nixosModules.dnsmasq
-              { nixus.dnsmasq = sharedDnsmasqConfig; }
+              (lib.optionals (nixusInput != null) [
+                nixusInput.nixosModules.dnsmasq
+                { nixus.dnsmasq = sharedDnsmasqConfig; }
+              ])
               # (mkMarinerNode {
               #   inherit user keys;
               #   hostname = "mariner-1";
@@ -715,8 +749,10 @@
                 hostname = "mariner-3";
               })
               inputs.nixos-hardware.nixosModules.raspberry-pi-3
-              inputs.nixus.nixosModules.dnsmasq
-              { nixus.dnsmasq = sharedDnsmasqConfig; }
+              (lib.optionals (nixusInput != null) [
+                nixusInput.nixosModules.dnsmasq
+                { nixus.dnsmasq = sharedDnsmasqConfig; }
+              ])
             ];
           };
 
@@ -730,8 +766,10 @@
                 hostname = "mariner-4";
               })
               inputs.nixos-hardware.nixosModules.raspberry-pi-3
-              inputs.nixus.nixosModules.dnsmasq
-              { nixus.dnsmasq = sharedDnsmasqConfig; }
+              (lib.optionals (nixusInput != null) [
+                nixusInput.nixosModules.dnsmasq
+                { nixus.dnsmasq = sharedDnsmasqConfig; }
+              ])
             ];
           };
 
@@ -793,8 +831,8 @@
           homeManagerModule = {
             home-manager = {
               sharedModules = [
-                inputs.sops-nix.homeManagerModules.sops
-                inputs.nixvim.homeManagerModules.nixvim
+inputs.sops-nix.homeModules.sops inputs.nixvim.homeModules.nixvim
+
                 ./nix/packages/shared/shell-aliases
               ];
               extraSpecialArgs = specialArgs;
@@ -847,8 +885,8 @@
           pkgs = pkgsFor system;
           modules =
             [
-              inputs.sops-nix.homeManagerModules.sops
-              inputs.nixvim.homeManagerModules.nixvim
+inputs.sops-nix.homeModules.sops inputs.nixvim.homeModules.nixvim
+
               ./nix/packages/shared/shell-aliases
             ]
             ++ lib.filter (m: m != null) [

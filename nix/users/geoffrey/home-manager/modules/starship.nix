@@ -26,7 +26,7 @@ in
       eval "$(${starshipInit "zsh"})" 2>/dev/null || true
     elif command -v starship >/dev/null 2>&1; then
       eval "$(starship init zsh)" 2>/dev/null || true
-    fin
+    fi
   '';
   programs.fish.interactiveShellInit = lib.mkIf (
     config.programs.fish.enable && config.programs.starship.enable

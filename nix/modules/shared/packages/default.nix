@@ -22,14 +22,20 @@ with pkgs;
   wireguard-tools
   ripgrep # DEPENDANT: Telescope live_grep
 
-          # DEVELOPMENT
-          lazygit
-          # micromamba  # Temporarily disabled - build failure
-          zig # also needed for cc compiler for lazy in neovim
+  # DEVELOPMENT
+  lazygit
+  # micromamba  # Temporarily disabled - build failure
+  zig # also needed for cc compiler for lazy in neovim
+
   git
   difftastic
   jq
-  md-tui  # mdt was renamed
+  # mdt was renamed
+  md-tui
+  # Nix formatter for editors like Cursor/VS Code
+  nixfmt
+  direnv # Environment variable manager for project-specific environments
+
   #  gptcommit
 
   # Security
@@ -39,7 +45,8 @@ with pkgs;
   # Encryption and security tools
   #  _1password
   age
-  # sops
+  sops
+
   age-plugin-yubikey
   gnupg
   libfido2

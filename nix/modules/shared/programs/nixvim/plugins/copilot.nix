@@ -1,7 +1,7 @@
 {
   programs.nixvim = {
     plugins.copilot-vim = {
-      enable = true;
+      enable = false;  # Temporarily disabled due to unfree license evaluation issue
       #      settings = {
       #        extraConfigLua = ''
       #          vim.g.copilot_no_tab_map = true

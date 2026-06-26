@@ -26,7 +26,7 @@
     ./plugins/copilot.nix
     ./plugins/duck.nix
     ./plugins/rustaceanvim.nix
-    ./plugins/code-runner.nix
+    # ./plugins/code-runner.nix  # Temporarily disabled due to apple_sdk_11_0 error
     ./plugins/diffview.nix
     ./plugins/harpoon.nix
 

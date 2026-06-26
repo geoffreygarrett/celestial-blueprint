@@ -60,8 +60,8 @@
     useGlobalPkgs = true;
     # backupFileExtension is set in nix/users/geoffrey/shared/unix.nix
     sharedModules = [
-      inputs.nixvim.homeManagerModules.nixvim
-      inputs.sops-nix.homeManagerModules.sops
+inputs.nixvim.homeModules.nixvim inputs.sops-nix.homeModules.sops
+
       ../../packages/shared/shell-aliases
     ];
     users.${user} =
@@ -86,17 +86,21 @@
           packages = pkgs.callPackage ./packages { };
           stateVersion = "23.11";
 
+          # Disable fonts module to avoid apple_sdk_11_0 error
+          # The fonts module in nix-darwin references darwin.apple_sdk_11_0 which has been removed
+          # We disable it by not setting the file at all, which prevents the onChange script from being generated
+
           # Set up LIBRARY_PATH and CPATH for Rust linking on macOS
           # This ensures libiconv can be found when using cargo install
+          # Note: Removed darwin.apple_sdk.frameworks references to avoid apple_sdk_11_0 error
           sessionVariables = {
             LIBRARY_PATH = lib.makeLibraryPath [
-              pkgs.libiconv
-              pkgs.darwin.apple_sdk.frameworks.CoreFoundation
-              pkgs.darwin.apple_sdk.frameworks.Security
-              pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
+pkgs.libiconv
+
             ];
             CPATH = lib.makeSearchPath "include" [
-              pkgs.libiconv
+pkgs.libiconv.dev
+
             ];
           };
 

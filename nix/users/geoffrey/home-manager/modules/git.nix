@@ -2,24 +2,26 @@
 {
   programs.git = {
     enable = true;
-    userName = "geoffreygarrett";
-    userEmail = "26066340+geoffreygarrett@users.noreply.github.com";
-    aliases = {
-      undo = "reset HEAD~1 --mixed";
-      st = "status -sb";
-      co = "checkout";
-      cob = "checkout -b";
-      br = "branch";
-      ci = "commit";
-      cm = "commit -m";
-      amend = "commit --amend --no-edit";
-      unstage = "reset HEAD --";
-      last = "log -1 HEAD";
-      lg = "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit";
-      use-ssh = "!f() { git remote set-url origin $(git remote get-url origin | sed -E 's#^https?://([^/]+)/(.+)$#git@\\1:\\2#'); }; f";
-      use-https = "!f() { git remote set-url origin $(git remote get-url origin | sed -E 's#^git@([^:]+):(.+)$#https://\\1/\\2#'); }; f";
-    };
-    extraConfig = {
+    settings = {
+      user = {
+        name = "geoffreygarrett";
+        email = "26066340+geoffreygarrett@users.noreply.github.com";
+      };
+      alias = {
+        undo = "reset HEAD~1 --mixed";
+        st = "status -sb";
+        co = "checkout";
+        cob = "checkout -b";
+        br = "branch";
+        ci = "commit";
+        cm = "commit -m";
+        amend = "commit --amend --no-edit";
+        unstage = "reset HEAD --";
+        last = "log -1 HEAD";
+        lg = "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit";
+        "use-ssh" = "!f() { git remote set-url origin $(git remote get-url origin | sed -E 's#^https?://([^/]+)/(.+)$#git@\\1:\\2#'); }; f";
+        "use-https" = "!f() { git remote set-url origin $(git remote get-url origin | sed -E 's#^git@([^:]+):(.+)$#https://\\1/\\2#'); }; f";
+      };
       init.defaultBranch = "main";
       color.ui = "auto";
       push = {
@@ -52,15 +54,17 @@
       "build"
       "dist"
     ];
-    delta = {
-      enable = true;
-      options = {
-        navigate = true;
-        light = false;
-        side-by-side = true;
-        line-numbers = true;
-      };
-    };
     lfs.enable = true;
+  };
+
+  programs.delta = {
+    enable = true;
+    enableGitIntegration = true;
+    options = {
+      navigate = true;
+      light = false;
+      side-by-side = true;
+      line-numbers = true;
+    };
   };
 }

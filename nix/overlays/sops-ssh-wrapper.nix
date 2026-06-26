@@ -46,15 +46,18 @@ let
         combined_private_keys="$user_age_private_key"
       fi
 
-      if [ $# -eq 0 ]; then
-        echo "Usage: sops [sops_options] <file>" >&2
-        return 1
-      fi
-      SOPS_AGE_KEY="$combined_private_keys" ${prev.sops}/bin/sops --age "$age_recipients" "$@"
+      # Set SOPS_AGE_KEY environment variable with converted private keys
+      # Recipients are read from .sops.yaml automatically, so we don't pass --age flag
+      export SOPS_AGE_KEY="$combined_private_keys"
+      
+      # Call the real sops command with all arguments
+      # sops will automatically read recipients from .sops.yaml based on file path
+      exec ${prev.sops}/bin/sops "$@"
     }
     sops_ssh "$@"
   '';
 in
 {
-  sopss = sops-wrapped;
+  # Replace sops with our wrapper that automatically converts SSH keys to age keys
+  sops = sops-wrapped;
 }

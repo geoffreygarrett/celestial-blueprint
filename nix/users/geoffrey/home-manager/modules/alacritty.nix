@@ -20,8 +20,7 @@
           y = 10;
         };
         dynamic_padding = false;
-        decorations = "none";
-        # decorations = "full";
+        decorations = "full";
         opacity = 0.95;
         startup_mode = "Windowed";
         title = "Alacritty";
