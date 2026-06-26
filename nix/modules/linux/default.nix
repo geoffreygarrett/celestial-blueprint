@@ -14,8 +14,10 @@
 
   # Home Manager Standalone Configuration
   home.username = user;
-  home.homeDirectory = "/home/${user}";
-  home.stateVersion = "24.05";
+  home.homeDirectory = lib.mkDefault (
+    if pkgs.stdenv.isDarwin then "/Users/${user}" else "/home/${user}"
+  );
+  home.stateVersion = "24.11";
   #  home-manager.backupFileExtension = "nixus.bak";
   # Nixpkgs Configuration
   # nixpkgs.config = { };

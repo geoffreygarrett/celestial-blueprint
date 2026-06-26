@@ -27,7 +27,7 @@ in
     pkgs.cifs-utils
     pkgs.nautilus
     pkgs.gvfs
-    pkgs.gnome.gnome-keyring
+    pkgs.gnome-keyring
   ];
   boot.supportedFilesystems = [ "fuse" ];
 

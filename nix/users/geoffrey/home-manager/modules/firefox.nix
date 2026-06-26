@@ -108,7 +108,7 @@ in
       userContent = ''
         @import url("${material-fox-chrome}/userContent.css");
       '';
-      extensions = import ./firefox/extensions.nix { inherit inputs pkgs; };
+      extensions.packages = import ./firefox/extensions.nix { inherit inputs pkgs; };
     };
   };
 }

@@ -13,7 +13,7 @@ in
 {
   programs.starship = {
     enable = true;
-    settings = builtins.fromTOML (builtins.readFile "${inputs.self}/dotfiles/starship/starship.toml");
+    settings = builtins.fromTOML (builtins.readFile "${inputs.self}/nix/users/geoffrey/home-manager/assets/starship/starship.toml");
   };
 
   programs.bash.initExtra = lib.mkIf (

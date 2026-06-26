@@ -8,7 +8,7 @@ let
   fingerprints = builtins.fromJSON (builtins.readFile ./fingerprint.json);
 in
 {
-  imports = [ ../../../../modules/nixos/displays.nix ];
+  imports = [ ../../../nix/modules/nixos/displays.nix ];
   custom.displays = {
     enable = true;
     monitors = {

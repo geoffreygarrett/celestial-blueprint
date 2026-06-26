@@ -23,7 +23,7 @@
   ];
 
   users.users.geoffrey.packages = with pkgs; [
-    glxinfo
+    mesa-demos
     minicom
 
     #
@@ -38,10 +38,10 @@
     emacs-all-the-icons-fonts
     feather-font # from overlay
     # jetbrains-mono
-    (nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
+    nerd-fonts.jetbrains-mono
     font-awesome
     noto-fonts
-    noto-fonts-emoji
+    noto-fonts-color-emoji
   ];
 
   services.xserver.exportConfiguration = true;

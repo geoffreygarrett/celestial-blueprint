@@ -8,6 +8,17 @@ NC='\033[0m'
 OS_TYPE=$(uname -s)
 SYSTEM=$(uname -m)
 
+# Function to get the lowercase hostname, works on both Linux and macOS
+get_hostname() {
+  if [ "$OS_TYPE" = "Darwin" ]; then
+    scutil --get ComputerName | tr '[:upper:]' '[:lower:]'
+  else
+    hostname | tr '[:upper:]' '[:lower:]'
+  fi
+}
+
+HOSTNAME=$(get_hostname)
+
 if [ "$OS_TYPE" = "Linux" ]; then
   case "$SYSTEM" in
     x86_64)
@@ -23,7 +34,7 @@ if [ "$OS_TYPE" = "Linux" ]; then
   esac
 
   # Check if a host-specific configuration exists
-  if [ -e "./nix/hosts/nixos/$HOSTNAME" ]; then
+  if [ -e "./hosts/$HOSTNAME" ]; then
     FLAKE_TARGET="$HOSTNAME"
     echo -e "${GREEN}Using host-specific configuration for $HOSTNAME${NC}"
   else
@@ -50,7 +61,7 @@ elif [ "$OS_TYPE" = "Darwin" ]; then
   esac
 
   # Check if a host-specific configuration exists
-  if [ -e "./nix/hosts/darwin/$HOSTNAME" ]; then
+  if [ -e "./hosts/$HOSTNAME" ]; then
     FLAKE_TARGET="$HOSTNAME"
     echo -e "${GREEN}Using host-specific configuration for $HOSTNAME${NC}"
   else

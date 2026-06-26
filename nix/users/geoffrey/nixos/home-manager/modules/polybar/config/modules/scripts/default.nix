@@ -118,7 +118,7 @@ let
         $suspend)
             ans=$(confirm_exit)
             if [[ $ans == "yes" || $ans == "YES" || $ans == "y" || $ans == "Y" ]]; then
-                ${pkgs.mpc_cli}/bin/mpc -q pause
+                ${pkgs.mpc}/bin/mpc -q pause
                 ${pkgs.alsa-utils}/bin/amixer set Master mute
                 ${pkgs.systemd}/bin/systemctl suspend
             elif [[ $ans == "no" || $ans == "NO" || $ans == "n" || $ans == "N" ]]; then

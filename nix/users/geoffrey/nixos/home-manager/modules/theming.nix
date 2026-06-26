@@ -9,8 +9,8 @@
 {
   home.packages = with pkgs; [
     gtk-engine-murrine
-    gnome.gnome-themes-extra
-    gnome.adwaita-icon-theme
+    gnome-themes-extra
+    adwaita-icon-theme
   ];
 
   gtk = {

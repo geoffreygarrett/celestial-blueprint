@@ -34,7 +34,7 @@ if [ "$OS_TYPE" = "Linux" ]; then
   esac
 
   # Check if a host-specific configuration exists
-  if [ -e "./nix/hosts/nixos/$HOSTNAME" ]; then
+  if [ -e "./hosts/$HOSTNAME" ]; then
     FLAKE_TARGET="$HOSTNAME"
     echo -e "${GREEN}Using host-specific configuration for $HOSTNAME${NC}"
   else
@@ -61,7 +61,7 @@ elif [ "$OS_TYPE" = "Darwin" ]; then
   esac
 
   # Check if a host-specific configuration exists
-  if [ -e "./nix/hosts/darwin/$HOSTNAME" ]; then
+  if [ -e "./hosts/$HOSTNAME" ]; then
     FLAKE_TARGET="$HOSTNAME"
     echo -e "${GREEN}Using host-specific configuration for $HOSTNAME${NC}"
   else

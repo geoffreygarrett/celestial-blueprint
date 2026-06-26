@@ -11,15 +11,15 @@ in
   imports = [
     inputs.jetpack-nixos.nixosModules.default
     ./hardware-configuration.nix
-    ../../../modules/nixos/openssh.nix
-    ../../../modules/nixos/tailscale.nix
-    ../shared.nix
+    ../../nix/modules/nixos/openssh.nix
+    ../../nix/modules/nixos/tailscale.nix
+    ../../nix/modules/nixos/shared-hosts.nix
   ];
   services.xserver.enable = true;
   services.xserver.displayManager.lightdm.enable = true;
   services.xserver.displayManager.lightdm.greeters.slick.enable = true;
   services.xserver.displayManager.defaultSession = "none+bspwm";
-  services.xserver.displayManager.lightdm.background = ../../../modules/shared/assets/wallpaper/login-wallpaper.png;
+  services.xserver.displayManager.lightdm.background = ../../nix/modules/shared/assets/wallpaper/login-wallpaper.png;
   services.xserver.desktopManager = {
     xterm.enable = false;
   };

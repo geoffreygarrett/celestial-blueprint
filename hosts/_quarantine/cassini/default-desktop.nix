@@ -24,7 +24,7 @@
       playerctl
       wireplumber # For PulseWire
       bc # For brightnessctl
-      (nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
+      nerd-fonts.jetbrains-mono
     ];
   };
 

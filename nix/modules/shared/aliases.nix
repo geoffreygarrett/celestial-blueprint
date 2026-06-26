@@ -197,7 +197,7 @@
 
     # System Information and Management
     neofetch = {
-      command = "${pkgs.neofetch}/bin/neofetch";
+      command = "${pkgs.fastfetch}/bin/fastfetch";
       description = "Show system information.";
       tags = [
         "system"

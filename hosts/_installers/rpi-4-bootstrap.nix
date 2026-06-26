@@ -5,9 +5,9 @@
 }:
 {
   imports = [
-    ./shared.nix
+    ./bootstrap-shared.nix
     "${inputs.nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-    inputs.nixos-hardware.nixosModules.raspberry-pi-3
+    inputs.nixos-hardware.nixosModules.raspberry-pi-4
   ];
   # NOTE: To stop zsf from building for the bootstrap.
   # https://discourse.nixos.org/t/how-to-disable-zfs-for-custom-install-image/26828

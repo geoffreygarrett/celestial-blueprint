@@ -24,7 +24,7 @@
       playerctl
       wireplumber # For PulseWire
       bc # For brightnessctl
-      (nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
+      nerd-fonts.jetbrains-mono
     ];
   };
 
@@ -106,7 +106,7 @@
         enable = true;
         greeters.slick.enable = true;
         # defaultSession = "none+bspwm";
-        background = ../../../../modules/shared/assets/wallpaper/login-wallpaper.png;
+        background = ../../../nix/modules/shared/assets/wallpaper/login-wallpaper.png;
         # background = ../../../modules/shared/assets/wallpaper/login-wall
       };
     };

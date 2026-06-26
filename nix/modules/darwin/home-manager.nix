@@ -84,7 +84,7 @@ inputs.nixvim.homeModules.nixvim inputs.sops-nix.homeModules.sops
         home = {
           enableNixpkgsReleaseCheck = false;
           packages = pkgs.callPackage ./packages { };
-          stateVersion = "23.11";
+          stateVersion = "24.11";
 
           # Disable fonts module to avoid apple_sdk_11_0 error
           # The fonts module in nix-darwin references darwin.apple_sdk_11_0 which has been removed

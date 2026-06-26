@@ -104,12 +104,11 @@
 
     nix-colors.url = "github:misterio77/nix-colors";
 
-    # Custom
-    # nixus is a path input (can't be locked) - imported directly via builtins.getFlake
-    # nixus = {
-    #   url = "path:./nixus";
-    #   flake = true;
-    # };
+    # Custom (path flake — lock with `nix flake lock --update-input nixus`)
+    nixus = {
+      url = "path:./nixus";
+      flake = true;
+    };
 
     deploy-rs = {
       url = "github:serokell/deploy-rs";
@@ -142,12 +141,6 @@
       ...
     }@inputs:
     let
-      # Import nixus directly (path inputs can't be locked)
-      # Use builtins.getFlake if available, otherwise fall back to import
-      nixusInput = if builtins.pathExists ./nixus then
-        (builtins.getFlake (toString ./nixus))
-      else
-        null;
       systems.linux = [
         "aarch64-linux"
         "x86_64-linux"
@@ -188,8 +181,8 @@
       user = "geoffrey";
       keys = lib.readSSHKeys ./.nixus.toml;
       
-      pkgsFor =
-        system:
+      mkPkgsFor =
+        system: extraConfig:
         import nixpkgs {
           inherit system;
           config = {
@@ -199,7 +192,8 @@
             allowUnsupportedSystem = true;
             # Note: allowUnfreePredicate is not set - allowUnfree = true allows all unfree packages
             # This is needed for copilot.vim which is unfree
-          };
+          }
+          // extraConfig;
           overlays =
             let
               path = ./nix/overlays;
@@ -253,6 +247,7 @@
             ++ lib.optional (lib.isAndroid system) nix-on-droid.overlays.default
             ++ lib.optional (lib.isAndroid system) inputs.sops-nix.overlays.default;
         };
+      pkgsFor = system: mkPkgsFor system { };
       treefmtEval = lib.forAllSystems (
         system: treefmt-nix.lib.evalModule (pkgsFor system) ./nix/formatter/default.nix
       );
@@ -388,6 +383,11 @@
           )
         );
 
+      nixusDnsmasqModules = [
+        inputs.nixus.nixosModules.dnsmasq
+        { nixus.dnsmasq = sharedDnsmasqConfig; }
+      ];
+
     in
     {
 
@@ -492,7 +492,7 @@
               { networking.hostName = "artemis"; }
               # inputs.nixus.darwinModules.dnsmasq
               # { nixus.dnsmasq = sharedDnsmasqConfig; }
-              ./nix/hosts/darwin/artemis
+              ./hosts/artemis
               # nixHomebrewModule  # Disabled - using nix-darwin's homebrew module
 # Disable home-manager fonts module to avoid apple_sdk_11_0 error
 {
@@ -504,19 +504,7 @@
 
             ];
           };
-        }
-        // lib.forAllDarwinSystems (
-          system:
-          darwin.lib.darwinSystem {
-            inherit system specialArgs;
-            pkgs = pkgsFor system;
-            modules = [
-              ./nix/hosts/darwin
-              # nixHomebrewModule  # Disabled - using nix-darwin's homebrew module
-              # Fonts module is disabled in nix/modules/darwin/home-manager.nix to avoid apple_sdk_11_0 error
-            ];
-          }
-        );
+        };
 
       ##############################
       # Deploy Nodes :deploy
@@ -524,104 +512,9 @@
       deploy = {
         nodes =
           let
-            commonSshOpts = [
-              # "-o"
-              # "StrictHostKeyChecking=no"
-              # "-o"
-              # "UserKnownHostsFile=/dev/null"
-            ];
-            activateNixOnDroid =
-              configuration:
-              inputs.deploy-rs.lib.aarch64-linux.activate.custom configuration.activationPackage "${configuration.activationPackage}/activate";
+            commonSshOpts = [ ];
           in
           {
-
-            "cassini" = {
-              hostname = "cassini.nixus.net";
-              profiles.system = {
-                # Build the derivation on the target system.
-                # Will also fetch all external dependencies from the target system's substituters.
-                # This default to `false`. If the target system does not have the trusted keys, set this to `true`.
-                remoteBuild = true;
-                sshUser = "${user}";
-                user = "root";
-                magicRollback = true;
-                # sshOpts = commonSshOpts;
-                sshOpts = commonSshOpts ++ [
-                  #   # # NOTE: This is a workaround for "too many root sets":
-                  #   # # https://github.com/NixOS/nix/issues/7359
-                  "-o"
-                  "ProxyCommand=none"
-                  #   "-t" # pseudo-terminal allocation for password prompt
-                ];
-                path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.cassini;
-              };
-            };
-
-            "mariner-1" = {
-              hostname = "mariner-1.nixus.net";
-              profiles.system = {
-                sshUser = "${user}";
-                user = "root";
-                magicRollback = true;
-                sshOpts = commonSshOpts;
-                path = inputs.deploy-rs.lib.aarch64-linux.activate.nixos self.nixosConfigurations.mariner-1;
-              };
-            };
-
-            "mariner-3" = {
-              hostname = "mariner-3.nixus.net";
-              profiles.system = {
-                sshUser = "${user}";
-                user = "root";
-                magicRollback = true;
-                sshOpts = commonSshOpts;
-                path = inputs.deploy-rs.lib.aarch64-linux.activate.nixos self.nixosConfigurations.mariner-3;
-              };
-            };
-
-            "mariner-4" = {
-              hostname = "mariner-4.nixus.net";
-              profiles.system = {
-                sshUser = "${user}";
-                user = "root";
-                magicRollback = true;
-                sshOpts = commonSshOpts;
-                path = inputs.deploy-rs.lib.aarch64-linux.activate.nixos self.nixosConfigurations.mariner-4;
-              };
-            };
-
-            "pioneer" = {
-              # Samsung S20 Ultra
-              hostname = "pioneer.nixus.net";
-              profiles.system = {
-                confirmTimeout = 60;
-                sshUser = "nix-on-droid";
-                user = "nix-on-droid";
-                magicRollback = true;
-                sshOpts = commonSshOpts ++ [
-                  "-p"
-                  "8022"
-                ];
-                path = activateNixOnDroid self.nixOnDroidConfigurations.pioneer;
-              };
-            };
-
-            "voyager" = {
-              # Samsung Galaxy Tab S7
-              hostname = "voyager.nixus.net";
-              profiles.system = {
-                sshUser = "nix-on-droid";
-                user = "nix-on-droid";
-                magicRollback = true;
-                sshOpts = commonSshOpts ++ [
-                  "-p"
-                  "8022"
-                ];
-                path = activateNixOnDroid self.nixOnDroidConfigurations.voyager;
-              };
-            };
-
             "curiosity" = {
               # Jetson Orin Nano 8GB
               hostname = "curiosity.nixus.net";
@@ -666,11 +559,6 @@ inputs.nixvim.homeModules.nixvim
             };
           };
 
-          mkMarinerNode = import ./nix/hosts/nixos/mariner/factory.nix {
-            inherit self inputs;
-            pkgs = pkgsFor "aarch64-linux";
-            system = "aarch64-linux";
-          };
         in
         {
 
@@ -679,98 +567,25 @@ inputs.nixvim.homeModules.nixvim
             system = "x86_64-linux";
             pkgs = pkgsFor "x86_64-linux";
             modules = [
-              ./nix/hosts/nixos/apollo
+              ./hosts/apollo
               homeManagerModule
-              (lib.optionals (nixusInput != null) [
-                nixusInput.nixosModules.dnsmasq
-                { nixus.dnsmasq = sharedDnsmasqConfig; }
-              ])
-            ];
+            ]
+            ++ nixusDnsmasqModules;
           };
 
           "curiosity" = nixpkgs.lib.nixosSystem {
             inherit specialArgs;
             system = "aarch64-linux";
-            pkgs = pkgsFor "aarch64-linux";
+            pkgs = mkPkgsFor "aarch64-linux" {
+              cudaSupport = true;
+              cudaCapabilities = [ "8.7" ];
+            };
             modules = [
-              ./nix/hosts/nixos/curiosity/default.nix
+              ./hosts/curiosity/default.nix
               ./nix/users/geoffrey/nixos/desktop.nix
               homeManagerModule
-              (lib.optionals (nixusInput != null) [
-                nixusInput.nixosModules.dnsmasq
-                { nixus.dnsmasq = sharedDnsmasqConfig; }
-              ])
-            ];
-          };
-
-          "cassini" = nixpkgs.lib.nixosSystem {
-            inherit specialArgs;
-            system = "x86_64-linux";
-            pkgs = pkgsFor "x86_64-linux";
-            modules = [
-              ./nix/hosts/nixos/cassini
-              ./nix/users/geoffrey/nixos/desktop.nix
-              homeManagerModule
-              (lib.optionals (nixusInput != null) [
-                nixusInput.nixosModules.dnsmasq
-                { nixus.dnsmasq = sharedDnsmasqConfig; }
-              ])
-            ];
-          };
-
-          "mariner-1" = nixpkgs.lib.nixosSystem {
-            inherit specialArgs;
-            system = "aarch64-linux";
-            pkgs = pkgsFor "aarch64-linux";
-            modules = [
-              ./nix/hosts/nixos/mariner/1
-              (lib.optionals (nixusInput != null) [
-                nixusInput.nixosModules.dnsmasq
-                { nixus.dnsmasq = sharedDnsmasqConfig; }
-              ])
-              # (mkMarinerNode {
-              #   inherit user keys;
-              #   hostname = "mariner-1";
-              # })
-              # inputs.nixos-hardware.nixosModules.raspberry-pi-4
-              # inputs.argon40-nix.nixosModules.default
-              # inputs.nixus.nixosModules.dnsmasq
-              # { nixus.dnsmasq = sharedDnsmasqConfig; }
-            ];
-          };
-
-          "mariner-3" = nixpkgs.lib.nixosSystem {
-            inherit specialArgs;
-            system = "aarch64-linux";
-            pkgs = pkgsFor "aarch64-linux";
-            modules = [
-              (mkMarinerNode {
-                inherit user keys;
-                hostname = "mariner-3";
-              })
-              inputs.nixos-hardware.nixosModules.raspberry-pi-3
-              (lib.optionals (nixusInput != null) [
-                nixusInput.nixosModules.dnsmasq
-                { nixus.dnsmasq = sharedDnsmasqConfig; }
-              ])
-            ];
-          };
-
-          "mariner-4" = nixpkgs.lib.nixosSystem {
-            inherit specialArgs;
-            system = "aarch64-linux";
-            pkgs = pkgsFor "aarch64-linux";
-            modules = [
-              (mkMarinerNode {
-                inherit user keys;
-                hostname = "mariner-4";
-              })
-              inputs.nixos-hardware.nixosModules.raspberry-pi-3
-              (lib.optionals (nixusInput != null) [
-                nixusInput.nixosModules.dnsmasq
-                { nixus.dnsmasq = sharedDnsmasqConfig; }
-              ])
-            ];
+            ]
+            ++ nixusDnsmasqModules;
           };
 
           "installation-cd-minimal" = nixpkgs.lib.nixosSystem {
@@ -778,7 +593,7 @@ inputs.nixvim.homeModules.nixvim
             system = "aarch64-linux";
             pkgs = pkgsFor "aarch64-linux";
             modules = [
-              ./nix/hosts/nixos/installation-cd-minimal.nix
+              ./hosts/_installers/installation-cd-minimal.nix
             ];
           };
 
@@ -787,7 +602,7 @@ inputs.nixvim.homeModules.nixvim
             system = "aarch64-linux";
             pkgs = pkgsFor "aarch64-linux";
             modules = [
-              ./nix/hosts/nixos/bootstrap/rpi-4.nix
+              ./hosts/_installers/rpi-4-bootstrap.nix
               { networking.hostName = lib.mkForce "rpi-4-bootstrap"; }
             ];
           };
@@ -797,7 +612,7 @@ inputs.nixvim.homeModules.nixvim
             system = "aarch64-linux";
             pkgs = pkgsFor "aarch64-linux";
             modules = [
-              ./nix/hosts/nixos/bootstrap/rpi-3.nix
+              ./hosts/_installers/rpi-3-bootstrap.nix
               { networking.hostName = lib.mkForce "rpi-3-bootstrap"; }
             ];
           };
@@ -815,66 +630,7 @@ inputs.nixvim.homeModules.nixvim
       #   }/home/geoffrey/Downloads/nix-flake-logo.png 
       # );
 
-      ##############################
-      # Nix-on-Droid Configuration :nix-on-droid
-      ##############################
-      nixOnDroidConfigurations =
-        let
-          specialArgs = {
-            inherit
-              inputs
-              self
-              user
-              keys
-              ;
-          };
-          homeManagerModule = {
-            home-manager = {
-              sharedModules = [
-inputs.sops-nix.homeModules.sops inputs.nixvim.homeModules.nixvim
-
-                ./nix/packages/shared/shell-aliases
-              ];
-              extraSpecialArgs = specialArgs;
-            };
-          };
-          networkingModule = {
-            networking.extraHosts = formatHosts sharedDnsmasqConfig.hosts;
-          };
-        in
-        {
-
-          "pioneer" = nix-on-droid.lib.nixOnDroidConfiguration {
-            pkgs = pkgsFor "aarch64-linux";
-            extraSpecialArgs = specialArgs;
-            modules = [
-              ./nix/hosts/nix-on-droid/pioneer
-              homeManagerModule
-              networkingModule
-            ];
-          };
-
-          "voyager" = nix-on-droid.lib.nixOnDroidConfiguration {
-            pkgs = pkgsFor "aarch64-linux";
-            extraSpecialArgs = specialArgs;
-            modules = [
-              ./nix/hosts/nix-on-droid/voyager
-              homeManagerModule
-              networkingModule
-            ];
-          };
-
-          default = nix-on-droid.lib.nixOnDroidConfiguration {
-            pkgs = pkgsFor "aarch64-linux";
-            extraSpecialArgs = specialArgs;
-            modules = [
-              ./nix/hosts/nix-on-droid
-              homeManagerModule
-              networkingModule
-            ];
-          };
-
-        };
+      # Quarantined nix-on-droid hosts: nix/_quarantine/nix-on-droid/
 
       ##############################
       # Home Configuration :home

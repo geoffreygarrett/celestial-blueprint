@@ -90,7 +90,7 @@ fn get_secrets_path() -> Option<PathBuf> {
         let secrets_path = flake_location
             .parent()
             .unwrap()
-            .join("nix/home/geoffrey/global/secrets.yaml");
+            .join("secrets/default.yaml");
         if secrets_path.exists() {
             return Some(secrets_path);
         }

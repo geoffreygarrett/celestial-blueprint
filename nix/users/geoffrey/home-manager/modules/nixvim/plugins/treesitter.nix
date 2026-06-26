@@ -55,11 +55,6 @@
       };
     };
 
-    # Add Tree-sitter Playground plugin for debugging
-    extraPlugins = [
-      pkgs.vimPlugins.playground
-    ];
-
     extraConfigLua = ''
       vim.treesitter.query.set("rust", "injections", [[
         ((string_literal

@@ -26,7 +26,7 @@ in
       enable = true;
       role = "agent";
       serverAddr = "https://core-node:6443";
-      tokenFile = config.sops.secrets.k3sToken.path;
+      tokenFile = config.sops.secrets."k3s-token".path;
       extraFlags = [
         "--node-label=node.kubernetes.io/type=edge"
         "--kubelet-arg=eviction-hard=memory.available<100Mi,nodefs.available<10%"

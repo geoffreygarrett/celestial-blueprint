@@ -21,7 +21,7 @@
     ../../../modules/nixos/tailscale.nix
     ../../../modules/nixos/openssh.nix
     # ../../../modules/nixos/samba.nix
-    ./k3/agent.nix
+    ../../nix/modules/nixos/k3/agent.nix
     "${inputs.nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
   ] ++ extraModules;
 
@@ -76,7 +76,7 @@
     isNormalUser = true;
     shell = pkgs.zsh;
     extraGroups = [ "wheel" ];
-    initialPassword = "changeme";
+    hashedPasswordFile = config.sops.secrets."users/${user}/password".path;
     openssh.authorizedKeys.keys = keys;
   };
   users.users.root.openssh.authorizedKeys.keys = keys;
