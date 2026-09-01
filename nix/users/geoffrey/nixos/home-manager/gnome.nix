@@ -16,6 +16,7 @@ in
     ./shared.nix
     ../../home-manager/desktop.nix # nixvim, alacritty, firefox — WM-agnostic
     ./webapps.nix # Claude + ChatGPT: no native Linux app exists
+    ./work-apps.nix # what artemis is actually used for
   ];
 
   home.packages = with pkgs; [
