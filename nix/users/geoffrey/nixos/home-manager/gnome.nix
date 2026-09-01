@@ -76,6 +76,7 @@ in
         "firefox.desktop"
         "Alacritty.desktop"
         "cursor.desktop"
+        "claude-code.desktop"
         "claude-web.desktop"
         "chatgpt-web.desktop"
         "org.gnome.Nautilus.desktop"

@@ -49,7 +49,10 @@ let
     };
 in
 {
-  home.packages = [ pkgs.chromium ];
+  home.packages = with pkgs; [
+    chromium
+    code-cursor # 3.7.19 — real Linux build, unlike the other two
+  ];
 
   xdg.desktopEntries = {
     claude-web = mkWebApp {
@@ -58,6 +61,19 @@ in
       url = "https://claude.ai/new";
       comment = "Claude (web app)";
       icon = ../../../../modules/shared/assets/icons/claude.png;
+    };
+
+    # claude-code is a CLI with no .desktop of its own, so it can never show
+    # up in a launcher. Give it one that opens a terminal straight into it.
+    claude-code = {
+      name = "Claude Code";
+      comment = "Claude Code CLI in a terminal";
+      exec = "${pkgs.ghostty}/bin/ghostty -e ${pkgs.claude-code}/bin/claude";
+      icon = ../../../../modules/shared/assets/icons/claude.png;
+      terminal = false;
+      type = "Application";
+      categories = [ "Development" ];
+      settings.StartupWMClass = "com.mitchellh.ghostty";
     };
 
     chatgpt-web = mkWebApp {

@@ -62,7 +62,6 @@
 
   users.users.geoffrey.packages = with pkgs; [
     claude-code # CLI, 2.1.177
-    code-cursor # Cursor editor, 3.7.19 — the only one of the three with a real Linux build
     ghostty
   ];
 
