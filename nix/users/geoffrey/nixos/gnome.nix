@@ -47,6 +47,17 @@
     simple-scan
   ];
 
+  # --- power management -----------------------------------------------------
+  # cassini is driven headless over SSH (deploys, bootstrap transfers). The
+  # GNOME/logind defaults suspend on idle, which stranded it mid-transfer three
+  # times during the 2026-09-01 migration. Keep it awake on AC; still suspend
+  # on battery so a closed lid in a bag does not cook it.
+  services.logind.settings.Login = {
+    HandleLidSwitchExternalPower = "ignore";
+    IdleAction = "ignore";
+  };
+  services.displayManager.gdm.autoSuspend = false;
+
   # --- laptop niceties ------------------------------------------------------
   services.libinput.enable = true;
   services.power-profiles-daemon.enable = true;

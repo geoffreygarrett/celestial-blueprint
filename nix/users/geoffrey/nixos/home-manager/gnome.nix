@@ -57,6 +57,15 @@ in
     };
 
     # --- window management --------------------------------------------------
+    # GNOME's power plugin is independent of logind; both must be set or the
+    # session still suspends on idle.
+    "org/gnome/settings-daemon/plugins/power" = {
+      sleep-inactive-ac-type = "nothing";
+      sleep-inactive-battery-type = "suspend";
+      sleep-inactive-battery-timeout = 1800;
+      power-button-action = "interactive";
+    };
+
     "org/gnome/mutter" = {
       edge-tiling = true;
       dynamic-workspaces = true;
