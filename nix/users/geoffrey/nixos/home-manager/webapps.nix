@@ -16,6 +16,8 @@
 let
   browser = "${pkgs.chromium}/bin/chromium";
 
+  # The desktop-entry spec forbids '$' in Exec, so $HOME cannot be expanded
+  # there. Wrap the invocation in a script instead.
   mkWebApp =
     {
       id,
@@ -24,17 +26,25 @@ let
       icon,
       comment,
     }:
+    let
+      launcher = pkgs.writeShellScript "webapp-${id}" ''
+        exec ${browser} \
+          --app=${url} \
+          --class=${id} \
+          --user-data-dir="$HOME/.local/share/webapps/${id}" \
+          "$@"
+      '';
+    in
     {
       inherit name comment icon;
       # Separate --user-data-dir per app: independent logins, and GNOME treats
       # each as its own application rather than lumping them under Chromium.
-      exec = "${browser} --app=${url} --class=${id} --user-data-dir=$HOME/.local/share/webapps/${id}";
+      exec = "${launcher}";
       terminal = false;
       type = "Application";
-      categories = [
-        "Network"
-        "Development"
-      ];
+      # Exactly one main category, or desktop-file-validate warns about the
+      # app appearing twice in the menu.
+      categories = [ "Network" ];
       settings.StartupWMClass = id;
     };
 in
