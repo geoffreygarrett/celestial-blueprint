@@ -23,7 +23,10 @@
     # --- development ------------------------------------------------------
     insomnia # REST client
     postman
-    tableplus # DB GUI (Postico is macOS-only; this is the closest equivalent)
+    # TablePlus's Linux .deb 404s -- upstream overwrites release URLs, so the
+    # pinned hash rots. dbeaver covers the same Postgres/MySQL work.
+    dbeaver-bin
+    beekeeper-studio
     gitkraken
     ollama # local models
     ngrok
