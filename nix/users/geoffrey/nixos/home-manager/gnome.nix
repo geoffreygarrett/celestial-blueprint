@@ -15,6 +15,7 @@ in
   imports = [
     ./shared.nix
     ../../home-manager/desktop.nix # nixvim, alacritty, firefox — WM-agnostic
+    ./webapps.nix # Claude + ChatGPT: no native Linux app exists
   ];
 
   home.packages = with pkgs; [
@@ -74,6 +75,9 @@ in
       favorite-apps = [
         "firefox.desktop"
         "Alacritty.desktop"
+        "cursor.desktop"
+        "claude-web.desktop"
+        "chatgpt-web.desktop"
         "org.gnome.Nautilus.desktop"
       ];
     };
