@@ -58,6 +58,11 @@
   # --- packages -------------------------------------------------------------
   environment.systemPackages = with pkgs; [
     baobab
+    # Without these, update-desktop-database never runs and newly installed
+    # .desktop entries are not indexed into the application cache -- apps
+    # silently fail to appear in the GNOME launcher.
+    desktop-file-utils
+    shared-mime-info
   ];
 
   users.users.geoffrey.packages = with pkgs; [
