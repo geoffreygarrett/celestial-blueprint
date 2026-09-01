@@ -3,6 +3,7 @@
   inputs = {
     # Core
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-25.05";
 
     # Home Manager
     home-manager = {
@@ -10,12 +11,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+gateframe-context-manager = {
+  url = "github:geoffreygarrett/gateframe-context-manager/feat/nix-packaging";
+  inputs.nixpkgs.follows = "nixpkgs";
+};
+
     # System Management
-    nix-on-droid = {
-      url = "github:nix-community/nix-on-droid/release-24.05";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.home-manager.follows = "home-manager";
-    };
     system-manager = {
       url = "github:numtide/system-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -106,7 +107,7 @@
 
     # Custom (path flake — lock with `nix flake lock --update-input nixus`)
     nixus = {
-      url = "path:./nixus";
+      url = "git+file:///Users/geoffrey/.dotfiles?dir=nixus&ref=develop";
       flake = true;
     };
 
@@ -133,7 +134,6 @@
       darwin,
       xremap-flake,
       nix-homebrew,
-      nix-on-droid,
       rust-overlay,
       homebrew-core,
       homebrew-cask,
@@ -149,21 +149,7 @@
         "aarch64-darwin"
         "x86_64-darwin"
       ];
-      systems.android = [
-        "aarch64-linux"
-        # Nix-on-Droid does not support the following systems
-        # "armv7-linux"
-        # "armv8-linux"
-        # "x86_64-linux"
-      ];
-      allowed-unfree-packages = [
-        "lmstudio"
-        "nvidia"
-        "mendeley"
-"copilot.vim" "vimplugin-copilot.vim" "vimplugin-copilot.vim-2025-11-20"
-
-      ];
-      systems.supported = systems.linux ++ systems.darwin ++ systems.android;
+      systems.supported = systems.linux ++ systems.darwin;
 
       lib =
         nixpkgs.lib
@@ -171,11 +157,9 @@
         // {
           isLinux = system: builtins.elem system systems.linux;
           isDarwin = system: builtins.elem system systems.darwin;
-          isAndroid = system: builtins.elem system systems.android;
           forAllSystems = f: nixpkgs.lib.genAttrs systems.supported f;
           forAllDarwinSystems = f: nixpkgs.lib.genAttrs systems.darwin f;
           forAllLinuxSystems = f: nixpkgs.lib.genAttrs systems.linux f;
-          forAllAndroidSystems = f: nixpkgs.lib.genAttrs systems.android f;
           readSSHKeys = path: (builtins.fromTOML (builtins.readFile path)).authorized_keys;
         };
       user = "geoffrey";
@@ -233,19 +217,13 @@
             ++ lib.optional (lib.isLinux system) nixgl.overlay
             ++ map (n: import (path + ("/" + n))) overlayFiles
             ++ [
+              inputs.gateframe-context-manager.overlays.default
               # Only include nixus overlay if nixus input is available (path inputs can't be locked)
               (final: prev: {
                 nixus = if builtins.pathExists ./nixus then self.packages.${system}.nixus else prev.nixus or null;
               })
               inputs.nixpkgs-firefox-darwin.overlay
-            ]
-            ++ lib.optional (lib.isAndroid system) (
-              final: prev: {
-                nix-on-droid = nix-on-droid.packages.${system};
-              }
-            )
-            ++ lib.optional (lib.isAndroid system) nix-on-droid.overlays.default
-            ++ lib.optional (lib.isAndroid system) inputs.sops-nix.overlays.default;
+            ];
         };
       pkgsFor = system: mkPkgsFor system { };
       treefmtEval = lib.forAllSystems (
@@ -267,86 +245,10 @@
               }
             ];
           };
-          "pioneer.nixus.net" = {
-            addresses = [
-              {
-                ip = "192.168.68.102";
-                type = "local";
-              }
-              {
-                ip = "100.78.156.17";
-                type = "tailscale";
-              }
-            ];
-          };
           "curiosity.nixus.net" = {
             addresses = [
               {
                 ip = "192.168.68.106";
-                type = "local";
-              }
-            ];
-          };
-          "voyager.nixus.net" = {
-            addresses = [
-              {
-                ip = "192.168.68.113";
-                type = "local";
-              }
-              {
-                ip = "100.112.193.127";
-                type = "tailscale";
-              }
-            ];
-          };
-          "mariner-1.nixus.net" = {
-            addresses = [
-              {
-                ip = "192.168.68.109";
-                type = "local";
-              }
-            ];
-          };
-          "mariner-3.nixus.net" = {
-            addresses = [
-              {
-                ip = "192.168.68.122";
-                type = "local";
-              }
-              {
-                ip = "100.126.29.41";
-                type = "tailscale";
-              }
-            ];
-          };
-          "mariner-4.nixus.net" = {
-            addresses = [
-              {
-                ip = "192.168.68.121";
-                type = "local";
-              }
-              {
-                ip = "100.112.163.77";
-                type = "tailscale";
-              }
-            ];
-          };
-          "nimbus.nixus.net" = {
-            addresses = [
-              {
-                ip = "100.98.196.120";
-                type = "tailscale";
-              }
-              {
-                ip = "192.168.68.115";
-                type = "local";
-              }
-            ];
-          };
-          "cassini.nixus.net" = {
-            addresses = [
-              {
-                ip = "192.168.68.133";
                 type = "local";
               }
             ];
@@ -400,13 +302,15 @@
           pkgs = pkgsFor system;
         in
         {
+          gateframe-context-manager = pkgs.gateframe-context-manager;
+
           nixus = import ./nix/apps/nixus {
             inherit
               system
               pkgs
               rust-overlay
-              lib
-              nix-on-droid
+lib
+
               ;
           };
           hosts = pkgs.writeShellScriptBin "hosts" (builtins.readFile ./scripts/print_hosts.sh);
@@ -529,6 +433,19 @@
                 path = inputs.deploy-rs.lib.aarch64-linux.activate.nixos self.nixosConfigurations.curiosity;
               };
             };
+            "cassini" = {
+              hostname = "192.168.0.106";
+              profiles.system = {
+                sshUser = "${user}";
+                user = "root";
+                remoteBuild = true;
+                magicRollback = false;
+                sshOpts = commonSshOpts;
+                confirmTimeout = 300;
+                activationTimeout = 600;
+                path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.cassini;
+              };
+            };
           };
       };
 
@@ -548,8 +465,9 @@
           homeManagerModule = {
             home-manager = {
               sharedModules = [
-inputs.nixvim.homeModules.nixvim
-
+                inputs.sops-nix.homeModules.sops
+                inputs.nixvim.homeModules.nixvim
+                inputs.gateframe-context-manager.homeManagerModules.default
                 ./nix/packages/shared/shell-aliases
                 ./nix/modules/shared/colors.nix
               ];
@@ -588,6 +506,20 @@ inputs.nixvim.homeModules.nixvim
             ++ nixusDnsmasqModules;
           };
 
+          "cassini" = nixpkgs.lib.nixosSystem {
+            inherit specialArgs;
+            system = "x86_64-linux";
+            pkgs = pkgsFor "x86_64-linux";
+            modules = [
+              ./hosts/cassini/default.nix
+              # GNOME desktop. Swap for ./nix/users/geoffrey/nixos/desktop.nix
+              # to go back to the bspwm/polybar/skhd setup, which is untouched.
+              ./nix/users/geoffrey/nixos/gnome.nix
+              homeManagerModule
+            ]
+            ++ nixusDnsmasqModules;
+          };
+
           "installation-cd-minimal" = nixpkgs.lib.nixosSystem {
             inherit specialArgs;
             system = "aarch64-linux";
@@ -618,19 +550,8 @@ inputs.nixvim.homeModules.nixvim
           };
 
         };
-      # // lib.forAllLinuxSystems (
-      #   system:
-      #   nixpkgs.lib.nixosSystem {
-      #     inherit system specialArgs;
-      #     pkgs = pkgsFor system;
-      #     modules = [
-      #       ./nix/hosts/nixos
-      #       homeManagerModule
-      #     ];
-      #   }/home/geoffrey/Downloads/nix-flake-logo.png 
-      # );
 
-      # Quarantined nix-on-droid hosts: nix/_quarantine/nix-on-droid/
+      # Inactive hosts preserved under hosts/_quarantine/
 
       ##############################
       # Home Configuration :home
@@ -641,6 +562,8 @@ inputs.nixvim.homeModules.nixvim
           pkgs = pkgsFor system;
           modules =
             [
+                  inputs.gateframe-context-manager.homeManagerModules.default
+
 inputs.sops-nix.homeModules.sops inputs.nixvim.homeModules.nixvim
 
               ./nix/packages/shared/shell-aliases

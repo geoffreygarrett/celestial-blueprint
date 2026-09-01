@@ -17,7 +17,7 @@ shared-packages
 
   jetbrains.rust-rover
   jetbrains.clion
-  jetbrains.pycharm-professional
+  jetbrains.pycharm
   # Communication
   simplescreenrecorder
   mendeley
